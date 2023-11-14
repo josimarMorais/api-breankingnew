@@ -1,7 +1,5 @@
 # api-breankingnew
 
-## express
-  **npm i express**
+**express** - npm i express
 
-## nodemon
- **npm i nodemon**
+**nodemon** - npm i nodemon
