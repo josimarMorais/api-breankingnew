@@ -4,6 +4,7 @@ import dotenv from 'dotenv';
 
 import userRoute from './src/routes/user.routes.js';
 import authRoute from './src/routes/auth.route.js';
+import newsRoute from './src/routes/news.route.js';
 
 
 dotenv.config();
@@ -19,6 +20,7 @@ app.use(express.json());
 //ROTAS
 app.use("/user", userRoute);
 app.use("/auth", authRoute);
+app.use("/news", newsRoute);
 
 
 app.listen(port, () => console.log(`Servidor rodando na porta ${port}`));
