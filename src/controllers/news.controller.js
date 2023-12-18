@@ -12,7 +12,7 @@ const create = async (req, res) => {
         }
 
         await createService({
-            title, text, banner, id: "objectidFake1"
+            title, text, banner, user: { _id: "6579eb5d8c00887169dfd04f"}
 
         })
 
@@ -26,10 +26,24 @@ const create = async (req, res) => {
 
 
 
-const findAll = (req, res) => {
-    const news = [];
+const findAll = async (req, res) => {
+    
+    try {
 
-    res.send({ news })
+        const news = await findAllService();
+
+        if (news.length === 0 ){
+            return res.status(400).send({
+                message: "There are no registred news"
+            })
+        }
+
+        res.send(news);
+
+
+    } catch (err) {
+        res.status(500).send({ message: err.message })
+    }
 
 }
 
