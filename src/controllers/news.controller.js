@@ -1,4 +1,4 @@
-import { createService, findAllService, countNewsService, topNewsService, findByIdService } from '../services/News.service.js'
+import { createService, findAllService, countNewsService, topNewsService, findByIdService, searchByTitleService } from '../services/News.service.js'
 
 
 const create = async (req, res) => {
@@ -23,7 +23,6 @@ const create = async (req, res) => {
         return res.status(500).send({ message: err.message })
     }
 }
-
 
 
 const findAll = async (req, res) => {
@@ -136,10 +135,40 @@ const findById = async (req, res) => {
 
         })
 
-    } catch (error) {
+    } catch (err) {
         return res.status(500).send({ message: err.message })
     }
 
 }
 
-export { create, findAll, topNews, findById }
+const searchByTitle = async (req, res) => {
+    try {
+        const { title } = req.query;
+
+        const news = await searchByTitleService(title);
+
+        if (news.length === 0) {
+            return res.status(400).send({ message: "There are no posts with this title" })
+        }
+
+        return res.send({
+            results: news.map(item => ({
+                id: item._id,
+                title: item.title,
+                text: item.text,
+                banner: item.banner,
+                likes: item.linkes,
+                comments: item.comments,
+                name: item.user.name,
+                username: item.user.username,
+                userAvatar: item.user.avatar
+            }))
+
+        })
+
+    } catch (err) {
+        return res.status(500).send({ message: err.message })
+    }
+}
+
+export { create, findAll, topNews, findById, searchByTitle }
