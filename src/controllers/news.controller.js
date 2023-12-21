@@ -1,4 +1,4 @@
-import { createService, findAllService, countNewsService, topNewsService, findByIdService, searchByTitleService, byUserService, updateService, eraseService, likeNewsService, deletelikeNewsService, addCommentService } from '../services/News.service.js'
+import { createService, findAllService, countNewsService, topNewsService, findByIdService, searchByTitleService, byUserService, updateService, eraseService, likeNewsService, deletelikeNewsService, addCommentService, deleteCommentService } from '../services/News.service.js'
 
 
 const create = async (req, res) => {
@@ -22,6 +22,7 @@ const create = async (req, res) => {
     }
 }
 
+
 const findAll = async (req, res) => {
 
     try {
@@ -38,6 +39,7 @@ const findAll = async (req, res) => {
         }
 
         const news = await findAllService(offset, limit);
+        
         const total = await countNewsService();
 
         const currentUrl = req.baseUrl;
@@ -82,6 +84,7 @@ const findAll = async (req, res) => {
 
 }
 
+
 const topNews = async (req, res) => {
     try {
         const news = await topNewsService();
@@ -109,6 +112,7 @@ const topNews = async (req, res) => {
 
 }
 
+
 const findById = async (req, res) => {
     try {
         const { id } = req.params;
@@ -134,6 +138,7 @@ const findById = async (req, res) => {
     }
 
 }
+
 
 const searchByTitle = async (req, res) => {
     try {
@@ -165,6 +170,7 @@ const searchByTitle = async (req, res) => {
     }
 }
 
+
 const byUser = async (req, res) => {
     try {
 
@@ -194,6 +200,7 @@ const byUser = async (req, res) => {
 
 }
 
+
 const update = async (req, res) => {
     try {
         const { title, text, banner } = req.body;
@@ -220,6 +227,7 @@ const update = async (req, res) => {
 
 }
 
+
 const erase = async (req, res) => {
     try {
         const { id } = req.params;
@@ -240,6 +248,7 @@ const erase = async (req, res) => {
     }
 }
 
+
 const likeNews = async (req, res) => {
     try {
         const { id } = req.params;
@@ -259,11 +268,12 @@ const likeNews = async (req, res) => {
 
 }
 
+
 const addComment = async (req, res) => {
     try {
         const { id } = req.params;
         const userId = req.userId;
-        const comment = req.body;
+        const { comment } = req.body;
 
         if (!comment) {
             return res.status(400).send({ message: "Write a message to comment" })
@@ -271,7 +281,7 @@ const addComment = async (req, res) => {
 
         await addCommentService(id, comment, userId);
 
-        return res.send({ message : "Comment successfully completed"})
+        return res.send({ message: "Comment successfully completed" })
 
     } catch (err) {
         return res.status(500).send({ message: err.message })
@@ -279,4 +289,31 @@ const addComment = async (req, res) => {
 }
 
 
-export { create, findAll, topNews, findById, searchByTitle, byUser, update, erase, likeNews, addComment }
+const deleteComment = async (req, res) => {
+    try {
+        const { idNews, idComment } = req.params
+
+        const userId = req.userId
+
+        const news = await findByIdService(idNews);
+
+        if (news.user._id != userId) {
+            return res.status(400).send({ message: "You can't delete this comment" })
+        }
+
+        const commentDeleted = await deleteCommentService(idNews, idComment, userId)
+
+        const commentFinder = commentDeleted.comments.find((comment) => comment.idComment === idComment);
+
+        if (!commentFinder) {
+            return res.status(400).send({ message: "Comment not found" })
+        }
+
+        return res.send({ message: "Comment removed successfully" })
+    }
+    catch (erro) {
+        res.status(500).send({ message: erro.message })
+    }
+}
+
+export { create, findAll, topNews, findById, searchByTitle, byUser, update, erase, likeNews, addComment, deleteComment }
