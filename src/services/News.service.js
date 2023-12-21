@@ -10,12 +10,22 @@ const topNewsService = () => News.findOne().sort({ _id: -1 }).populate("user");
 
 const findByIdService = (id) => News.findById(id).populate("user");
 
-const searchByTitleService = (title) => News.find({ title: { $regex: `${title || ""}`, $options: "i" }}).sort({ _id: -1 }).populate("user");
+const searchByTitleService = (title) => News.find({ title: { $regex: `${title || ""}`, $options: "i" } }).sort({ _id: -1 }).populate("user");
 
-const byUserService = (id) => News.find({user: id}).sort({ _id: -1 }).populate("user");
+const byUserService = (id) => News.find({ user: id }).sort({ _id: -1 }).populate("user");
 
-const updateService = (id, title, text, banner) => News.findOneAndUpdate({_id: id}, {title, text, banner}, {rawResult: true})
+const updateService = (id, title, text, banner) => News.findOneAndUpdate({ _id: id }, { title, text, banner }, { rawResult: true })
 
-const eraseService = (id) => News.findOneAndDelete({_id: id});
+const eraseService = (id) => News.findOneAndDelete({ _id: id });
 
-export { createService, findAllService, countNewsService, topNewsService, findByIdService, searchByTitleService, byUserService, updateService, eraseService  }
+const likeNewsService = (idNews, userId) => News.findOneAndUpdate({ _id: idNews, "likes.userId": { $nin: [userId] } }, { $push: { likes: { userId, createdAt: new Date() } } });
+
+const deletelikeNewsService = (idNews, userId) => News.findOneAndUpdate({ _id: idNews} , { $pull: { likes: { userId } } });
+
+const addCommentService = (idNews, comment, userId) => { 
+    const idComment = Math.floor(Date.now() * Math.random()).toString(36);
+
+    return News.findOneAndUpdate({_id : idNews}, {$push: {comments : { idComment, userId, comment, createdAt : new Date()}}})
+};
+
+export { createService, findAllService, countNewsService, topNewsService, findByIdService, searchByTitleService, byUserService, updateService, eraseService, likeNewsService, deletelikeNewsService, addCommentService }

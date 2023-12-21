@@ -1,4 +1,4 @@
-import { createService, findAllService, countNewsService, topNewsService, findByIdService, searchByTitleService, byUserService, updateService, eraseService } from '../services/News.service.js'
+import { createService, findAllService, countNewsService, topNewsService, findByIdService, searchByTitleService, byUserService, updateService, eraseService, likeNewsService, deletelikeNewsService, addCommentService } from '../services/News.service.js'
 
 
 const create = async (req, res) => {
@@ -67,7 +67,7 @@ const findAll = async (req, res) => {
                 title: item.title,
                 text: item.text,
                 banner: item.banner,
-                likes: item.linkes,
+                likes: item.likes,
                 comments: item.comments,
                 name: item.user.name,
                 username: item.user.username,
@@ -96,7 +96,7 @@ const topNews = async (req, res) => {
                 title: news.title,
                 text: news.text,
                 banner: news.banner,
-                likes: news.linkes,
+                likes: news.likes,
                 comments: news.comments,
                 name: news.user.name,
                 username: news.user.username,
@@ -121,13 +121,12 @@ const findById = async (req, res) => {
                 title: news.title,
                 text: news.text,
                 banner: news.banner,
-                likes: news.linkes,
+                likes: news.likes,
                 comments: news.comments,
                 name: news.user.name,
                 username: news.user.username,
                 userAvatar: news.user.avatar
             }
-
         })
 
     } catch (err) {
@@ -152,7 +151,7 @@ const searchByTitle = async (req, res) => {
                 title: item.title,
                 text: item.text,
                 banner: item.banner,
-                likes: item.linkes,
+                likes: item.likes,
                 comments: item.comments,
                 name: item.user.name,
                 username: item.user.username,
@@ -179,7 +178,7 @@ const byUser = async (req, res) => {
                 title: item.title,
                 text: item.text,
                 banner: item.banner,
-                likes: item.linkes,
+                likes: item.likes,
                 comments: item.comments,
                 name: item.user.name,
                 username: item.user.username,
@@ -190,7 +189,7 @@ const byUser = async (req, res) => {
 
 
     } catch (err) {
-        res.status(500).send({ message: err.message })
+        return res.status(500).send({ message: err.message })
     }
 
 }
@@ -201,43 +200,83 @@ const update = async (req, res) => {
         const { id } = req.params;
 
         if (!title && !banner && !text) {
-            return res.status(400).send({ message: "Submit at least one field to update the News"})
+            return res.status(400).send({ message: "Submit at least one field to update the News" })
         }
 
         const news = await findByIdService(id);
 
-        if(news.user.id != req.userId){
-            return res.status(400).send({ message: "You didn't update this News."})
+        if (news.user.id != req.userId) {
+            return res.status(400).send({ message: "You didn't update this News." })
         }
 
         await updateService(id, title, text, banner);
 
-        return res.send({ message: "News successfully updated!"});
+        return res.send({ message: "News successfully updated!" });
 
 
     } catch (err) {
-        res.status(500).send({ message: err.message })
+        return res.status(500).send({ message: err.message })
     }
 
 }
 
 const erase = async (req, res) => {
-    try{
+    try {
         const { id } = req.params;
 
         const news = await findByIdService(id);
 
-        if(news.user.id != req.userId){
-            return res.status(400).send({ message: "You didn't delete this News."})
+        if (news.user.id != req.userId) {
+            return res.status(400).send({ message: "You didn't delete this News." })
         }
 
         await eraseService(id);
 
-        return res.send({message: "News deleted successfully!"});
+        return res.send({ message: "News deleted successfully!" });
 
 
-    }catch(err){
-        res.status(500).send({ message: err.message})
+    } catch (err) {
+        return res.status(500).send({ message: err.message })
     }
 }
-export { create, findAll, topNews, findById, searchByTitle, byUser, update, erase }
+
+const likeNews = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const userId = req.userId;
+
+        const newsLiked = await likeNewsService(id, userId);
+
+        if (!newsLiked) {
+            await deletelikeNewsService(id, userId)
+            return res.status(200).send({ message: "Like succefully removed" })
+        }
+
+        return res.send({ message: "Like done succefully" });
+    } catch (err) {
+        return res.status(500).send({ message: err.message })
+    }
+
+}
+
+const addComment = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const userId = req.userId;
+        const comment = req.body;
+
+        if (!comment) {
+            return res.status(400).send({ message: "Write a message to comment" })
+        }
+
+        await addCommentService(id, comment, userId);
+
+        return res.send({ message : "Comment successfully completed"})
+
+    } catch (err) {
+        return res.status(500).send({ message: err.message })
+    }
+}
+
+
+export { create, findAll, topNews, findById, searchByTitle, byUser, update, erase, likeNews, addComment }
